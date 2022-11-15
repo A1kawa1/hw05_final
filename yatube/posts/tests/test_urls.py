@@ -113,7 +113,10 @@ class StaticURLTests(TestCase):
         с /posts/{id}/comment/ на /auth/login/?next=/posts/{id}/comment/"""
         id = StaticURLTests.post.id
         responce = self.guest_client.get(f'/posts/{id}/comment/', follow=True)
-        self.assertRedirects(responce, f'/auth/login/?next=/posts/{id}/comment/')
+        self.assertRedirects(
+            responce,
+            f'/auth/login/?next=/posts/{id}/comment/'
+        )
 
     def test_following(self):
         """Проверка подписки авторизованному пользователю"""
@@ -155,4 +158,3 @@ class StaticURLTests(TestCase):
         self.assertFalse(
             new_post in response_un_follow.context.get('page_obj').object_list
         )
-        

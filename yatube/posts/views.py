@@ -123,7 +123,9 @@ def add_comment(request, post_id):
 def follow_index(request):
     user = request.user
     following = Follow.objects.filter(user=user)
-    get_author = lambda user_author: user_author.author
+    #get_author = lambda user_author: user_author.author
+    def get_author(user_author):
+        return user_author.author
     all_following = list(map(get_author, following))
     post_list = Post.objects.select_related(
         'author',

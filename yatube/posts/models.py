@@ -56,7 +56,7 @@ class Comment(models.Model):
         related_name='comments',
         on_delete=models.CASCADE
     )
-    author  = models.ForeignKey(
+    author = models.ForeignKey(
         User,
         related_name='comments',
         on_delete=models.CASCADE
@@ -81,5 +81,6 @@ class Follow(models.Model):
         related_name='following',
         on_delete=models.CASCADE
     )
+
     def __str__(self):
         return f'{self.user}  {self.author}'

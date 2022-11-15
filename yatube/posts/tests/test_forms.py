@@ -10,6 +10,7 @@ from posts.models import Post, Group
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostsFormTest(TestCase):
     @classmethod
@@ -65,7 +66,7 @@ class PostsFormTest(TestCase):
                 text='123',
                 group=PostsFormTest.group,
                 image='posts/small.gif'
-                ).exists()
+            ).exists()
         )
 
     def test_form_edit_post(self):
