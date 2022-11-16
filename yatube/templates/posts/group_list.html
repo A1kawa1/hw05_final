@@ -4,7 +4,7 @@
   <h1>{{ group.title }}</h1>
   <p>{{ group.description }}</p>
   {% for post in page_obj %}
-    {% include 'includes/card.html' with show_author=1 %}
+    {% include 'includes/card.html' with show_author=True %}
     {% if not forloop.last %}
       <hr>
     {% endif %}

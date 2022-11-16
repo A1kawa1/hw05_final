@@ -4,7 +4,7 @@
   {% include 'includes/switcher.html' %}
   <h1>Последние обновления на сайте</h1>
     {% for post in page_obj %}
-      {% include 'includes/card.html' with show_group=1 show_author=1 %}
+      {% include 'includes/card.html' with show_group=True show_author=True %}
       {% if not forloop.last %}
         <hr>
       {% endif %}

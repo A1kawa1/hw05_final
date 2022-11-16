@@ -18,11 +18,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('text', 'author', 'post')
 
 
-class FollowAdmin(admin.ModelAdmin):
-    list_display = ('user', 'author')
-
-
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Comment, CommentAdmin)
-admin.site.register(Follow, FollowAdmin)
+admin.site.register(Follow)

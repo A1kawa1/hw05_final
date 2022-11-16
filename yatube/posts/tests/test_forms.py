@@ -61,13 +61,10 @@ class PostsFormTest(TestCase):
             data=test_form,
             follow=True
         )
-        self.assertTrue(
-            Post.objects.filter(
-                text='123',
-                group=PostsFormTest.group,
-                image='posts/small.gif'
-            ).exists()
-        )
+        last_post=Post.objects.all().latest('id')
+        self.assertEqual(last_post.text, '123')
+        self.assertEqual(last_post.group, PostsFormTest.group)
+        self.assertEqual(last_post.image, 'posts/small.gif')
 
     def test_form_edit_post(self):
         """Валидная форма изменяет запись в Post"""
@@ -81,15 +78,8 @@ class PostsFormTest(TestCase):
             'group': group.id
         }
         self.authorized_client.post(
-            reverse('posts:post_edit', kwargs={'post_id': '1'}),
+            reverse('posts:post_edit', kwargs={'post_id': PostsFormTest.post.id}),
             data=test_form
         )
-        new_post = Post.objects.get(id=1)
-        self.assertEqual(new_post.text, test_form['text'])
-        self.assertEqual(new_post.group.title,
-                         group.title)
-        old_group_response = self.client.get(
-            reverse('posts:group',
-                    kwargs={'slug': PostsFormTest.group.slug})
-        )
-        self.assertEqual(len(old_group_response.context['page_obj']), 0)
+        new_post = Post.objects.get(id=PostsFormTest.post.id)
+        self.assertEqual(new_post, PostsFormTest.post)

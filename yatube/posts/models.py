@@ -15,14 +15,12 @@ class Post(models.Model):
     )
     author = models.ForeignKey(
         User,
-        related_name='posts',
         on_delete=models.CASCADE,
         verbose_name='Автор'
     )
     group = models.ForeignKey(
         'Group',
         on_delete=models.SET_NULL,
-        related_name='posts',
         blank=True,
         null=True,
         verbose_name='Группа',
@@ -36,9 +34,10 @@ class Post(models.Model):
 
     class Meta:
         ordering = ('-pub_date',)
+        default_related_name = 'posts'
 
     def __str__(self):
-        return str(self.text)[:15]
+        return self.text[:15]
 
 
 class Group(models.Model):
@@ -66,8 +65,11 @@ class Comment(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        ordering = ('-created',)
+
     def __str__(self):
-        return str(self.text)[:15]
+        return self.text[:15]
 
 
 class Follow(models.Model):
@@ -83,4 +85,4 @@ class Follow(models.Model):
     )
 
     def __str__(self):
-        return f'{self.user}  {self.author}'
+        return f'{self.user} подписан на {self.author}'
