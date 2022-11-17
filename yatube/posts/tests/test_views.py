@@ -50,15 +50,23 @@ class PostsViewsTest(TestCase):
         cls.authorized_client2.force_login(cls.user2)
         cls.template = {
             reverse('posts:index'): 'posts/index.html',
-            reverse('posts:group',
-                    kwargs={'slug': cls.group.slug}): 'posts/group_list.html',
-            reverse('posts:profile',
-                    kwargs={'username': cls.user.username}): 'posts/profile.html',
-            reverse('posts:post_detail',
-                    kwargs={'post_id': '1'}): 'posts/post_detail.html',
+            reverse(
+                'posts:group',
+                kwargs={'slug': cls.group.slug}
+            ): 'posts/group_list.html',
+            reverse(
+                'posts:profile',
+                kwargs={'username': cls.user.username}
+            ): 'posts/profile.html',
+            reverse(
+                'posts:post_detail',
+                kwargs={'post_id': '1'}
+            ): 'posts/post_detail.html',
             reverse('posts:post_create'): 'posts/create_post.html',
-            reverse('posts:post_edit',
-                    kwargs={'post_id': '1'}): 'posts/create_post.html'
+            reverse(
+                'posts:post_edit',
+                kwargs={'post_id': '1'}
+            ): 'posts/create_post.html'
         }
 
     @classmethod
@@ -92,9 +100,13 @@ class PostsViewsTest(TestCase):
 
     def test_cahe_index(self):
         """Проверка кэширования для index """
-        response1 = PostsViewsTest.authorized_client.get(reverse('posts:index'))
+        response1 = PostsViewsTest.authorized_client.get(
+            reverse('posts:index')
+        )
         Post.objects.all().delete()
-        response2 = PostsViewsTest.authorized_client.get(reverse('posts:index'))
+        response2 = PostsViewsTest.authorized_client.get(
+            reverse('posts:index')
+        )
         self.assertEqual(response1.content,
                          response2.content)
         cache.clear()
@@ -102,7 +114,9 @@ class PostsViewsTest(TestCase):
             author=PostsViewsTest.user,
             text='Тестовый пост'
         )
-        response3 = PostsViewsTest.authorized_client.get(reverse('posts:index'))
+        response3 = PostsViewsTest.authorized_client.get(
+            reverse('posts:index')
+        )
         self.assertNotEqual(response2.content,
                             response3.content)
 
@@ -115,9 +129,10 @@ class PostsViewsTest(TestCase):
 
     def test_context_group_list(self):
         """Шаблон group_list сформирован с правильным контекстом"""
-        response = (PostsViewsTest.authorized_client.
-                    get(reverse('posts:group',
-                                kwargs={'slug': PostsViewsTest.group.slug})))
+        response = PostsViewsTest.authorized_client.get(
+            reverse('posts:group',
+                    kwargs={'slug': PostsViewsTest.group.slug})
+        )
         posts = response.context.get('page_obj').object_list
         for post in posts:
             self.assertEqual(post.group, PostsViewsTest.group)
@@ -131,19 +146,24 @@ class PostsViewsTest(TestCase):
 
     def test_paginator_group_list(self):
         """В шаблоне group_list используется paginator"""
-        response = self.client.get(reverse('posts:group',
-                                           kwargs={'slug': PostsViewsTest.group.slug}))
+        response = self.client.get(
+            reverse('posts:group',
+                    kwargs={'slug': PostsViewsTest.group.slug})
+        )
         self.assertEqual(len(response.context['page_obj']), 10)
-        response = self.client.get(reverse('posts:group',
-                                           kwargs={'slug': PostsViewsTest.group.slug})
-                                   + '?page=2')
+        response = self.client.get(
+            reverse('posts:group',
+                    kwargs={'slug': PostsViewsTest.group.slug})
+            + '?page=2'
+        )
         self.assertEqual(len(response.context['page_obj']), 3)
 
     def test_context_profile(self):
         """Шаблон profile сформирован с правильным контекстом"""
-        response = (PostsViewsTest.authorized_client.
-                    get(reverse('posts:profile',
-                                kwargs={'username': PostsViewsTest.user.username})))
+        response = PostsViewsTest.authorized_client.get(
+            reverse('posts:profile',
+                    kwargs={'username': PostsViewsTest.user.username})
+        )
         posts = response.context.get('page_obj').object_list
         for post in posts:
             self.assertEqual(post.author, PostsViewsTest.user)
@@ -157,12 +177,16 @@ class PostsViewsTest(TestCase):
 
     def test_paginator_profile(self):
         """В шаблоне profile используется paginator"""
-        response = self.client.get(reverse('posts:profile',
-                                           kwargs={'username': PostsViewsTest.user.username}))
+        response = self.client.get(
+            reverse('posts:profile',
+                    kwargs={'username': PostsViewsTest.user.username})
+        )
         self.assertEqual(len(response.context['page_obj']), 10)
-        response = self.client.get(reverse('posts:profile',
-                                           kwargs={'username': PostsViewsTest.user.username})
-                                   + '?page=2')
+        response = self.client.get(
+            reverse('posts:profile',
+                    kwargs={'username': PostsViewsTest.user.username})
+            + '?page=2'
+        )
         self.assertEqual(len(response.context['page_obj']), 3)
 
     def test_context_post_detail(self):
@@ -198,7 +222,9 @@ class PostsViewsTest(TestCase):
 
     def test_context_create_post(self):
         """Шаблон create_post сформирован с правильным контекстом"""
-        response = PostsViewsTest.authorized_client.get(reverse('posts:post_create'))
+        response = PostsViewsTest.authorized_client.get(
+            reverse('posts:post_create')
+        )
         test_form = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField
@@ -216,8 +242,10 @@ class PostsViewsTest(TestCase):
             group=PostsViewsTest.group,
             image=PostsViewsTest.uploaded
         )
-        response = PostsViewsTest.authorized_client.get(reverse('posts:post_edit',
-                                                        kwargs={'post_id': post.id}))
+        response = PostsViewsTest.authorized_client.get(
+            reverse('posts:post_edit',
+                    kwargs={'post_id': post.id})
+        )
         test_form = {
             'text': (forms.fields.CharField, 'Тестовый пост'),
             'group': (forms.fields.ChoiceField, PostsViewsTest.group.id)
@@ -233,7 +261,7 @@ class PostsViewsTest(TestCase):
         """Проверка подписки авторизованному пользователю"""
         PostsViewsTest.authorized_client.get(
             reverse('posts:profile_follow',
-            kwargs={'username': PostsViewsTest.user2.username})
+                    kwargs={'username': PostsViewsTest.user2.username})
         )
         self.assertTrue(
             Follow.objects.filter(
@@ -250,7 +278,7 @@ class PostsViewsTest(TestCase):
         )
         PostsViewsTest.authorized_client.get(
             reverse('posts:profile_unfollow',
-            kwargs={'username': PostsViewsTest.user2.username})
+                    kwargs={'username': PostsViewsTest.user2.username})
         )
         self.assertFalse(
             Follow.objects.filter(
@@ -264,7 +292,7 @@ class PostsViewsTest(TestCase):
         author = User.objects.create(username='test')
         PostsViewsTest.authorized_client.get(
             reverse('posts:profile_follow',
-            kwargs={'username': author.username})
+                    kwargs={'username': author.username})
         )
         new_post = Post.objects.create(
             author=author,

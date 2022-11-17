@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from http import HTTPStatus
-from posts.models import Post, Group, Follow
+from posts.models import Post, Group
 
 User = get_user_model()
 
@@ -51,17 +51,23 @@ class StaticURLTests(TestCase):
 
     def test_group(self):
         """Проверка доступности адреса /group/test_slug/"""
-        response = StaticURLTests.guest_client.get(f'/group/{StaticURLTests.group.slug}/')
+        response = StaticURLTests.guest_client.get(
+            f'/group/{StaticURLTests.group.slug}/'
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_profile(self):
         """Проверка доступности адреса '/profile/auth/"""
-        response = StaticURLTests.guest_client.get(f'/profile/{StaticURLTests.user.username}/')
+        response = StaticURLTests.guest_client.get(
+            f'/profile/{StaticURLTests.user.username}/'
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_posts(self):
         """Проверка доступности адреса /posts/1/"""
-        response = StaticURLTests.guest_client.get(f'/posts/{StaticURLTests.post.id}/')
+        response = StaticURLTests.guest_client.get(
+            f'/posts/{StaticURLTests.post.id}/'
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_create_unlog(self):
@@ -80,7 +86,10 @@ class StaticURLTests(TestCase):
         """Проверка перенаправления не авторизированного пользователя
         с /posts/{id}/edit/ на /auth/login/?next=/posts/{id}/edit/"""
         id = StaticURLTests.post.id
-        responce = StaticURLTests.guest_client.get(f'/posts/{id}/edit/', follow=True)
+        responce = StaticURLTests.guest_client.get(
+            f'/posts/{id}/edit/',
+            follow=True
+        )
         self.assertRedirects(responce, f'/auth/login/?next=/posts/{id}/edit/')
 
     def test_edit_no_author(self):
@@ -114,7 +123,10 @@ class StaticURLTests(TestCase):
         """Проверка перенаправления не авторизированного пользователя
         с /posts/{id}/comment/ на /auth/login/?next=/posts/{id}/comment/"""
         id = StaticURLTests.post.id
-        responce = StaticURLTests.guest_client.get(f'/posts/{id}/comment/', follow=True)
+        responce = StaticURLTests.guest_client.get(
+            f'/posts/{id}/comment/',
+            follow=True
+        )
         self.assertRedirects(
             responce,
             f'/auth/login/?next=/posts/{id}/comment/'

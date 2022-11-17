@@ -61,7 +61,7 @@ class PostsFormTest(TestCase):
             data=test_form,
             follow=True
         )
-        last_post=Post.objects.all().latest('id')
+        last_post = Post.objects.all().latest('id')
         self.assertEqual(last_post.text, '123')
         self.assertEqual(last_post.group, PostsFormTest.group)
         self.assertEqual(last_post.image, 'posts/small.gif')
@@ -78,7 +78,10 @@ class PostsFormTest(TestCase):
             'group': group.id
         }
         self.authorized_client.post(
-            reverse('posts:post_edit', kwargs={'post_id': PostsFormTest.post.id}),
+            reverse(
+                'posts:post_edit',
+                kwargs={'post_id': PostsFormTest.post.id}
+            ),
             data=test_form
         )
         new_post = Post.objects.get(id=PostsFormTest.post.id)
