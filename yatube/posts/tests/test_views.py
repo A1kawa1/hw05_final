@@ -263,9 +263,9 @@ class PostsViewsTest(TestCase):
     def test_following(self):
         """Проверка подписки авторизованному пользователю"""
         if Follow.objects.filter(
-                user=PostsViewsTest.user,
-                author=PostsViewsTest.user2
-            ).exists():
+            user=PostsViewsTest.user,
+            author=PostsViewsTest.user2
+        ).exists():
             return
 
         PostsViewsTest.authorized_client.get(

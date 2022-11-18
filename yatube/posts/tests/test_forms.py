@@ -86,6 +86,6 @@ class PostsFormTest(TestCase):
             data=test_form
         )
         new_post = Post.objects.get(id=PostsFormTest.post.id)
-        self.assertEqual(new_post.text, test_form['text']) 
+        self.assertEqual(new_post.text, test_form['text'])
         self.assertEqual(new_post.group.title, group.title)
         self.assertEqual(new_post.author, PostsFormTest.user)
