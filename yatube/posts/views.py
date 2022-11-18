@@ -2,8 +2,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
-from posts.models import Post, Group, Comment, Follow, get_user_model
+from posts.models import Post, Group, Comment, Follow
 from posts.forms import PostForm, CommentForm
 from yatube.settings import QUANTITY_POST
 
