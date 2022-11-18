@@ -24,9 +24,7 @@ class StaticURLTests(TestCase):
         cls.guest_client = Client()
         cls.user2 = User.objects.create_user(username='alex')
         cls.authorized_client = Client()
-        cls.authorized_client.force_login(cls.user2)
         cls.authorized_client2 = Client()
-        cls.authorized_client2.force_login(cls.user)
 
         cls.templates = {
             '/': 'posts/index.html',
@@ -40,6 +38,8 @@ class StaticURLTests(TestCase):
 
     def setUp(self):
         cache.clear()
+        StaticURLTests.authorized_client.force_login(StaticURLTests.user2)
+        StaticURLTests.authorized_client2.force_login(StaticURLTests.user)
 
     def tearDown(self):
         cache.clear()

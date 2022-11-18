@@ -62,7 +62,8 @@ class PostsFormTest(TestCase):
             follow=True
         )
         last_post = Post.objects.all().latest('id')
-        self.assertEqual(last_post.text, '123')
+        self.assertEqual(last_post.text, test_form['text'])
+        self.assertEqual(last_post.author, PostsFormTest.user)
         self.assertEqual(last_post.group, PostsFormTest.group)
         self.assertEqual(last_post.image, 'posts/small.gif')
 
@@ -85,4 +86,6 @@ class PostsFormTest(TestCase):
             data=test_form
         )
         new_post = Post.objects.get(id=PostsFormTest.post.id)
-        self.assertEqual(new_post, PostsFormTest.post)
+        self.assertEqual(new_post.text, test_form['text']) 
+        self.assertEqual(new_post.group.title, group.title)
+        self.assertEqual(new_post.author, PostsFormTest.user)

@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from posts.models import Post, Group, Comment, Follow, get_user_model
@@ -17,6 +18,7 @@ def paginator(post_list, request):
 
 
 @cache_page(timeout=20, key_prefix='index_page')
+@vary_on_cookie
 def index(request):
     post_list = Post.objects.select_related('author',
                                             'group')
@@ -40,13 +42,12 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user,
-            author=User.objects.get(username=username)
-        ).exists()
-    else:
-        following = 0
+    following = (request.user.is_authenticated
+     and Follow.objects.filter(
+        user=request.user,
+        author=User.objects.get(username=username)
+    ).exists())
+
     post_list = author.posts.all()
     context = {
         'author': author,

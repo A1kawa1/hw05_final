@@ -45,9 +45,7 @@ class PostsViewsTest(TestCase):
         Post.objects.bulk_create(cls.post_list)
         cls.guest_client = Client()
         cls.authorized_client = Client()
-        cls.authorized_client.force_login(cls.user)
         cls.authorized_client2 = Client()
-        cls.authorized_client2.force_login(cls.user2)
         cls.template = {
             reverse('posts:index'): 'posts/index.html',
             reverse(
@@ -75,6 +73,8 @@ class PostsViewsTest(TestCase):
 
     def setUp(self):
         cache.clear()
+        PostsViewsTest.authorized_client.force_login(PostsViewsTest.user)
+        PostsViewsTest.authorized_client2.force_login(PostsViewsTest.user2)
 
     def tearDown(self):
         cache.clear()
@@ -89,13 +89,14 @@ class PostsViewsTest(TestCase):
     def test_context_index(self):
         """Шаблон index сформирован с правильным контекстом"""
         response = PostsViewsTest.authorized_client.get(reverse('posts:index'))
-        self.assertEqual(response.context['page_obj'][0].text,
+        context = response.context['page_obj'][0]
+        self.assertEqual(context.text,
                          PostsViewsTest.post_list[0].text)
-        self.assertEqual(response.context['page_obj'][0].author,
+        self.assertEqual(context.author,
                          PostsViewsTest.post_list[0].author)
-        self.assertEqual(response.context['page_obj'][0].group,
+        self.assertEqual(context.group,
                          PostsViewsTest.post_list[0].group)
-        self.assertEqual(response.context['page_obj'][0].image,
+        self.assertEqual(context.image,
                          PostsViewsTest.post_list[0].image)
 
     def test_cahe_index(self):
@@ -133,15 +134,16 @@ class PostsViewsTest(TestCase):
             reverse('posts:group',
                     kwargs={'slug': PostsViewsTest.group.slug})
         )
-        posts = response.context.get('page_obj').object_list
-        for post in posts:
-            self.assertEqual(post.group, PostsViewsTest.group)
-
-        self.assertEqual(response.context['page_obj'][0].text,
+        context = response.context['page_obj'][0]
+        self.assertEqual(response.context.get('group'),
+                         PostsViewsTest.group)
+        self.assertEqual(context.group,
+                         PostsViewsTest.group)
+        self.assertEqual(context.text,
                          PostsViewsTest.post_list[0].text)
-        self.assertEqual(response.context['page_obj'][0].author,
+        self.assertEqual(context.author,
                          PostsViewsTest.post_list[0].author)
-        self.assertEqual(response.context['page_obj'][0].image,
+        self.assertEqual(context.image,
                          PostsViewsTest.post_list[0].image)
 
     def test_paginator_group_list(self):
@@ -164,15 +166,16 @@ class PostsViewsTest(TestCase):
             reverse('posts:profile',
                     kwargs={'username': PostsViewsTest.user.username})
         )
-        posts = response.context.get('page_obj').object_list
-        for post in posts:
-            self.assertEqual(post.author, PostsViewsTest.user)
-
-        self.assertEqual(response.context['page_obj'][0].text,
+        context = response.context['page_obj'][0]
+        self.assertEqual(response.context.get('author'),
+                         PostsViewsTest.user)
+        self.assertEqual(context.author,
+                         PostsViewsTest.user)
+        self.assertEqual(context.text,
                          PostsViewsTest.post_list[0].text)
-        self.assertEqual(response.context['page_obj'][0].group,
+        self.assertEqual(context.group,
                          PostsViewsTest.post_list[0].group)
-        self.assertEqual(response.context['page_obj'][0].image,
+        self.assertEqual(context.image,
                          PostsViewsTest.post_list[0].image)
 
     def test_paginator_profile(self):
@@ -247,7 +250,7 @@ class PostsViewsTest(TestCase):
                     kwargs={'post_id': post.id})
         )
         test_form = {
-            'text': (forms.fields.CharField, 'Тестовый пост'),
+            'text': (forms.fields.CharField, post.text),
             'group': (forms.fields.ChoiceField, PostsViewsTest.group.id)
         }
         for value, expected in test_form.items():
@@ -259,6 +262,12 @@ class PostsViewsTest(TestCase):
 
     def test_following(self):
         """Проверка подписки авторизованному пользователю"""
+        if Follow.objects.filter(
+                user=PostsViewsTest.user,
+                author=PostsViewsTest.user2
+            ).exists():
+            return
+
         PostsViewsTest.authorized_client.get(
             reverse('posts:profile_follow',
                     kwargs={'username': PostsViewsTest.user2.username})
