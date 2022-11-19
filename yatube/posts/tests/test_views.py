@@ -43,9 +43,6 @@ class PostsViewsTest(TestCase):
                               group=cls.group,
                               image=cls.uploaded)] * 13
         Post.objects.bulk_create(cls.post_list)
-        cls.guest_client = Client()
-        cls.authorized_client = Client()
-        cls.authorized_client2 = Client()
         cls.template = {
             reverse('posts:index'): 'posts/index.html',
             reverse(
@@ -73,22 +70,22 @@ class PostsViewsTest(TestCase):
 
     def setUp(self):
         cache.clear()
-        PostsViewsTest.authorized_client.force_login(PostsViewsTest.user)
-        PostsViewsTest.authorized_client2.force_login(PostsViewsTest.user2)
-
-    def tearDown(self):
-        cache.clear()
+        self.guest_client = Client()
+        self.authorized_client = Client()
+        self.authorized_client2 = Client()
+        self.authorized_client.force_login(self.user)
+        self.authorized_client2.force_login(self.user2)
 
     def test_template(self):
         """Адрес из словаря template использует соответсвующий шаблон"""
         for reverse_name, template in self.template.items():
             with self.subTest(reverse_name=reverse_name):
-                response = PostsViewsTest.authorized_client.get(reverse_name)
+                response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
     def test_context_index(self):
         """Шаблон index сформирован с правильным контекстом"""
-        response = PostsViewsTest.authorized_client.get(reverse('posts:index'))
+        response = self.authorized_client.get(reverse('posts:index'))
         context = response.context['page_obj'][0]
         self.assertEqual(context.text,
                          PostsViewsTest.post_list[0].text)
@@ -101,11 +98,11 @@ class PostsViewsTest(TestCase):
 
     def test_cahe_index(self):
         """Проверка кэширования для index """
-        response1 = PostsViewsTest.authorized_client.get(
+        response1 = self.authorized_client.get(
             reverse('posts:index')
         )
         Post.objects.all().delete()
-        response2 = PostsViewsTest.authorized_client.get(
+        response2 = self.authorized_client.get(
             reverse('posts:index')
         )
         self.assertEqual(response1.content,
@@ -115,7 +112,7 @@ class PostsViewsTest(TestCase):
             author=PostsViewsTest.user,
             text='Тестовый пост'
         )
-        response3 = PostsViewsTest.authorized_client.get(
+        response3 = self.authorized_client.get(
             reverse('posts:index')
         )
         self.assertNotEqual(response2.content,
@@ -130,7 +127,7 @@ class PostsViewsTest(TestCase):
 
     def test_context_group_list(self):
         """Шаблон group_list сформирован с правильным контекстом"""
-        response = PostsViewsTest.authorized_client.get(
+        response = self.authorized_client.get(
             reverse('posts:group',
                     kwargs={'slug': PostsViewsTest.group.slug})
         )
@@ -162,7 +159,7 @@ class PostsViewsTest(TestCase):
 
     def test_context_profile(self):
         """Шаблон profile сформирован с правильным контекстом"""
-        response = PostsViewsTest.authorized_client.get(
+        response = self.authorized_client.get(
             reverse('posts:profile',
                     kwargs={'username': PostsViewsTest.user.username})
         )
@@ -201,7 +198,7 @@ class PostsViewsTest(TestCase):
             reverse('posts:add_comment', kwargs={'post_id': '1'}),
             data=test_form
         )
-        response = PostsViewsTest.authorized_client.get(
+        response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': '1'})
         )
         self.assertEqual(response.context.get('comments')[0].text,
@@ -217,7 +214,7 @@ class PostsViewsTest(TestCase):
         test_form = {
             'text': '123'
         }
-        responce = PostsViewsTest.guest_client.post(
+        responce = self.guest_client.post(
             reverse('posts:add_comment', kwargs={'post_id': '1'}),
             data=test_form
         )
@@ -225,7 +222,7 @@ class PostsViewsTest(TestCase):
 
     def test_context_create_post(self):
         """Шаблон create_post сформирован с правильным контекстом"""
-        response = PostsViewsTest.authorized_client.get(
+        response = self.authorized_client.get(
             reverse('posts:post_create')
         )
         test_form = {
@@ -245,7 +242,7 @@ class PostsViewsTest(TestCase):
             group=PostsViewsTest.group,
             image=PostsViewsTest.uploaded
         )
-        response = PostsViewsTest.authorized_client.get(
+        response = self.authorized_client.get(
             reverse('posts:post_edit',
                     kwargs={'post_id': post.id})
         )
@@ -262,13 +259,13 @@ class PostsViewsTest(TestCase):
 
     def test_following(self):
         """Проверка подписки авторизованному пользователю"""
-        if Follow.objects.filter(
-            user=PostsViewsTest.user,
-            author=PostsViewsTest.user2
-        ).exists():
-            return
-
-        PostsViewsTest.authorized_client.get(
+        self.assertFalse(
+            Follow.objects.filter(
+                user=PostsViewsTest.user,
+                author=PostsViewsTest.user2
+            ).exists()
+        )
+        self.authorized_client.get(
             reverse('posts:profile_follow',
                     kwargs={'username': PostsViewsTest.user2.username})
         )
@@ -285,7 +282,7 @@ class PostsViewsTest(TestCase):
             user=PostsViewsTest.user,
             author=PostsViewsTest.user2
         )
-        PostsViewsTest.authorized_client.get(
+        self.authorized_client.get(
             reverse('posts:profile_unfollow',
                     kwargs={'username': PostsViewsTest.user2.username})
         )
@@ -299,7 +296,7 @@ class PostsViewsTest(TestCase):
     def test_new_post_for_follower(self):
         """Новый пост автора в разделе избранного виден подписчикам"""
         author = User.objects.create(username='test')
-        PostsViewsTest.authorized_client.get(
+        self.authorized_client.get(
             reverse('posts:profile_follow',
                     kwargs={'username': author.username})
         )
@@ -307,7 +304,7 @@ class PostsViewsTest(TestCase):
             author=author,
             text='Тестовый пост 2'
         )
-        response_follow = PostsViewsTest.authorized_client.get(
+        response_follow = self.authorized_client.get(
             reverse('posts:follow_index')
         )
         self.assertTrue(
@@ -321,7 +318,7 @@ class PostsViewsTest(TestCase):
             author=author,
             text='Тестовый пост 2'
         )
-        response_un_follow = PostsViewsTest.authorized_client2.get(
+        response_un_follow = self.authorized_client2.get(
             reverse('posts:follow_index')
         )
         self.assertFalse(
