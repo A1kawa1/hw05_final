@@ -92,15 +92,19 @@ class StaticURLTests(TestCase):
         """Проверка перенаправления пользователя, не являющимся автором
         с /posts/{id}/edit/ на /posts/{id}/"""
         id = StaticURLTests.post.id
-        responce = self.authorized_client.get(f'/posts/{id}/edit/',
-                                                        follow=True)
+        responce = self.authorized_client.get(
+            f'/posts/{id}/edit/',
+            follow=True
+        )
         self.assertRedirects(responce, f'/posts/{id}/')
 
     def test_edit(self):
         """Проверка доступности адреса /posts/{id}/edit/ для автора"""
         id = StaticURLTests.post.id
-        responce = self.authorized_client2.get(f'/posts/{id}/edit/',
-                                                         follow=True)
+        responce = self.authorized_client2.get(
+            f'/posts/{id}/edit/',
+            follow=True
+        )
         self.assertEqual(responce.status_code, HTTPStatus.OK)
 
     def test_unexsist(self):
