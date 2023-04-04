@@ -40,6 +40,12 @@
             редактировать пост
         </a>
       {% endif %}
+      {% if request.user == post.author %}
+        <a class="btn btn-danger"
+            href="{% url 'posts:post_delete' post.id %}">
+            удалить пост
+        </a>
+      {% endif %}
       {% include 'includes/comments.html' %}
     </article>
   </div>
